@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" type="text/css" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css" />
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css" />
+        <style>
+        #map {
+            width: 1042px;
+            height: 875px;
+        }
+        #title {
+            padding: 3px;
+            font-size: 30px;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+        }
+        #footer {
+            padding: 3px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        </style>
+        <title>Golf Courses in Ohio</title>
+    </head>
+    <body>
+        
+        <div id="title">
+        Golf Courses in Ohio (2017)
+        </div>
+        
+        <div id="map">
+        </div>
+        
+        <div id="footer">
+        Produced by Dan Hagquist, 8/19/2017
+        </div>
+        
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet-heat.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/OSMBuildings-Leaflet.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <script src="data/datafinal4shp0.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        L.ImageOverlay.include({
+            getBounds: function () {
+                return this._bounds;
+            }
+        });
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[38.3519009464,-85.5245952408],[42.1358467966,-79.6555365768]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.addAttribution('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a>');
+        var feature_group = new L.featureGroup([]);
+        var bounds_group = new L.featureGroup([]);
+        var raster_group = new L.LayerGroup([]);
+        var basemap0 = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors,<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>,Tiles courtesy of <a href="http://hot.openstreetmap.org/" target="_blank">Humanitarian OpenStreetMap Team</a>',
+            maxZoom: 28
+        });
+        basemap0.addTo(map);
+        function setBounds() {
+        }
+        function geoJson2heat(geojson, weight) {
+          return geojson.features.map(function(feature) {
+            return [
+              feature.geometry.coordinates[1],
+              feature.geometry.coordinates[0],
+              feature.properties[weight]
+            ];
+          });
+        }
+        function pop_datafinal4shp0(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    layer.setStyle(style_datafinal4shp0(feature));
+
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td><b>' + (feature.properties['NAME'] !== null ? Autolinker.link(String(feature.properties['NAME'])) : '') + '</b></td>\
+                    </tr>\
+                    <tr>\
+                        <td>' + (feature.properties['STREET'] !== null ? Autolinker.link(String(feature.properties['STREET'])) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td>' + (feature.properties['CITY'] !== null ? Autolinker.link(String(feature.properties['CITY'])) : '') + ', ' + (feature.properties['STATE'] !== null ? Autolinker.link(String(feature.properties['STATE'])) : '') + ' ' + (feature.properties['ZIP'] !== null ? Autolinker.link(String(feature.properties['ZIP'])) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent);
+        }
+
+        function style_datafinal4shp0() {
+            return {
+                pane: 'pane_datafinal4shp0',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,160,44,1.0)',
+            }
+        }
+        map.createPane('pane_datafinal4shp0');
+        map.getPane('pane_datafinal4shp0').style.zIndex = 600;
+        map.getPane('pane_datafinal4shp0').style['mix-blend-mode'] = 'normal';
+        var layer_datafinal4shp0 = new L.geoJson(json_datafinal4shp0, {
+            pane: 'pane_datafinal4shp0',
+            onEachFeature: pop_datafinal4shp0,
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, style_datafinal4shp0(feature))
+            }
+        });
+        bounds_group.addLayer(layer_datafinal4shp0);
+        feature_group.addLayer(layer_datafinal4shp0);
+        raster_group.addTo(map);
+        feature_group.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
